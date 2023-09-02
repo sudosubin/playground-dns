@@ -29,4 +29,8 @@ def question_to_bytes(question: DNSQuestion):
     return question.name + struct.pack("!HH", question.type_, question.class_)
 
 
-print(header_to_bytes(DNSHeader(id=0x1314, flags=0, num_questions=1, num_additionals=0, num_authorities=0, num_answers=0)))
+def encode_dns_name(domain_name: str):
+    encoded = b""
+    for part in domain_name.encode("ascii").split(b"."):
+        encoded += bytes([len(part)]) + part
+    return encoded + b"\x00"
