@@ -2,6 +2,7 @@ import dataclasses
 import io
 import random
 import struct
+import typing
 
 random.seed(1)
 
@@ -33,6 +34,16 @@ class DNSRecord:
     class_: int
     ttl: int
     data: bytes
+
+
+@dataclasses.dataclass
+class DNSPacket:
+    header: DNSHeader
+    questions: typing.List[DNSQuestion]
+    answers: typing.List[DNSRecord]
+    authorities: typing.List[DNSRecord]
+    additionals: typing.List[DNSRecord]
+
 
 
 def header_to_bytes(header: DNSHeader):
@@ -79,6 +90,17 @@ def parse_record(reader: io.BytesIO):
     return DNSRecord(name, type_, class_, ttl, data)
 
 
+def parse_dns_packet(data: bytes):
+    reader = io.BytesIO(data)
+    header = parse_header(reader)
+    questions = [parse_question(reader) for _ in range(header.num_questions)]
+    answers = [parse_record(reader) for _ in range(header.num_answers)]
+    authorities = [parse_record(reader) for _ in range(header.num_authorities)]
+    additionals = [parse_record(reader) for _ in range(header.num_additionals)]
+
+    return DNSPacket(header, questions, answers, authorities, additionals)
+
+
 def decode_name(reader: io.IOBase):
     parts = []
     while (length := reader.read(1)[0]) != 0:
@@ -109,11 +131,7 @@ def main():
     sock.sendto(query, ("8.8.8.8", 53))
 
     response, _ = sock.recvfrom(1024)
-    reader = io.BytesIO(response)
-
-    print(parse_header(reader))
-    print(parse_question(reader))
-    print(parse_record(reader))
+    print(parse_dns_packet(response))
 
 
 if __name__ == "__main__":
