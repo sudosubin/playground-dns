@@ -122,6 +122,10 @@ def decode_compressed_name(length: int, reader: io.IOBase):
     return result
 
 
+def ip_to_string(ip: bytes):
+    return ".".join([str() for x in ip])
+
+
 def main():
     import socket
 
