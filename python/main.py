@@ -160,7 +160,13 @@ def get_nameserver_ip(packet):
             return x.data
 
 
-def resolve_wrong(domain_name, record_type):
+def get_nameserver(packet):
+    for x in packet.authorities:
+        if x.type_ == TYPE_NS:
+            return x.data.decode('utf-8')
+
+
+def resolve(domain_name, record_type):
     nameserver: str = "198.41.0.4"
     while True:
         print(f"Querying {nameserver} for {domain_name}")
@@ -169,6 +175,9 @@ def resolve_wrong(domain_name, record_type):
             return ip
         elif ns_ip := get_nameserver_ip(response):
             nameserver = ns_ip.decode()
+        # New case: look up the nameserver's IP address if there is one
+        elif ns_domain := get_nameserver(response):
+            nameserver = resolve(ns_domain, TYPE_A).decode()
         else:
             raise Exception("something went wrong")
 
@@ -176,5 +185,5 @@ def resolve_wrong(domain_name, record_type):
 if __name__ == "__main__":
     import sys
 
-    print(resolve_wrong(sys.argv[1], TYPE_A))
+    print(resolve(sys.argv[1], TYPE_A))
     print(lookup_domain(domain_name=sys.argv[1]))
