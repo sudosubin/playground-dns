@@ -1,4 +1,5 @@
 import dataclasses
+import io
 import random
 import struct
 
@@ -60,15 +61,22 @@ def build_query(domain_name: str, record_type: int):
     return header_to_bytes(header) + question_to_bytes(question)
 
 
+def parse_header(reader: io.BytesIO):
+    items = struct.unpack("!HHHHHH", reader.read(12))
+    return DNSHeader(*items)
+
+
 def main():
     import socket
+
     query = build_query("www.example.com", 1)
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.sendto(query, ("8.8.8.8", 53))
 
     response, _ = sock.recvfrom(1024)
-    print(response)
+    reader = io.BytesIO(response)
+    print(parse_header(reader))
 
 
 if __name__ == "__main__":
