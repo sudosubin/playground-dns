@@ -66,6 +66,12 @@ def parse_header(reader: io.BytesIO):
     return DNSHeader(*items)
 
 
+def parse_question(reader: io.BytesIO):
+    name = decode_name_simple(reader)
+    type_, class_ = struct.unpack("!HH", reader.read(4))
+    return DNSQuestion(name, type_, class_)
+
+
 def decode_name_simple(reader: io.IOBase):
     parts = []
     while (length := reader.read(1)[0]) != 0:
@@ -84,6 +90,7 @@ def main():
     response, _ = sock.recvfrom(1024)
     reader = io.BytesIO(response)
     print(parse_header(reader))
+    print(parse_question(reader))
 
 
 if __name__ == "__main__":
