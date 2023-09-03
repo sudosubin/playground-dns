@@ -66,6 +66,13 @@ def parse_header(reader: io.BytesIO):
     return DNSHeader(*items)
 
 
+def decode_name_simple(reader: io.IOBase):
+    parts = []
+    while (length := reader.read(1)[0]) != 0:
+        parts.append(reader.read(length))
+    return b".".join(parts)
+
+
 def main():
     import socket
 
