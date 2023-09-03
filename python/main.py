@@ -8,6 +8,7 @@ import typing
 random.seed(1)
 
 TYPE_A = 1
+TYPE_NS = 2
 CLASS_IN = 1
 
 
@@ -85,8 +86,15 @@ def parse_question(reader: io.BytesIO):
 
 def parse_record(reader: io.BytesIO):
     name = decode_name(reader)
+    data = reader.read(10)
     type_, class_, ttl, data_len = struct.unpack("!HHIH", reader.read(10))
-    data = reader.read(data_len)
+    if type_ == TYPE_A:
+        data = ip_to_string(reader.read(data_len)).encode()
+    elif type_ == TYPE_NS:
+        data = decode_name(reader)
+    else:
+        data = reader.read(data_len)
+
     return DNSRecord(name, type_, class_, ttl, data)
 
 
