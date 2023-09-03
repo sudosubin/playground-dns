@@ -148,7 +148,33 @@ def lookup_domain(domain_name: str):
     return ip_to_string(response.answers[0].data)
 
 
+def get_answer(packet):
+    for x in packet.answers:
+        if x.type_ == TYPE_A:
+            return x.data
+
+
+def get_nameserver_ip(packet):
+    for x in packet.additionals:
+        if x.type_ == TYPE_A:
+            return x.data
+
+
+def resolve_wrong(domain_name, record_type):
+    nameserver: str = "198.41.0.4"
+    while True:
+        print(f"Querying {nameserver} for {domain_name}")
+        response = send_query(nameserver, domain_name, record_type)
+        if ip := get_answer(response):
+            return ip
+        elif ns_ip := get_nameserver_ip(response):
+            nameserver = ns_ip.decode()
+        else:
+            raise Exception("something went wrong")
+
+
 if __name__ == "__main__":
     import sys
 
+    print(resolve_wrong(sys.argv[1], TYPE_A))
     print(lookup_domain(domain_name=sys.argv[1]))
