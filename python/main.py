@@ -66,8 +66,7 @@ def encode_dns_name(domain_name: str):
 def build_query(domain_name: str, record_type: int):
     name = encode_dns_name(domain_name)
     id = random.randint(0, 65535)
-    RECURSION_DESIRED = 1 << 8
-    header = DNSHeader(id=id, num_questions=1, flags=RECURSION_DESIRED)
+    header = DNSHeader(id=id, num_questions=1, flags=0)
     question = DNSQuestion(name=name, type_=record_type, class_=CLASS_IN)
     return header_to_bytes(header) + question_to_bytes(question)
 
