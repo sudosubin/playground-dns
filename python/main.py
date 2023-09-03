@@ -123,20 +123,23 @@ def decode_compressed_name(length: int, reader: io.IOBase):
 
 
 def ip_to_string(ip: bytes):
-    return ".".join([str() for x in ip])
+    return ".".join([str(x) for x in ip])
 
 
-def main():
+def lookup_domain(domain_name: str):
     import socket
 
-    query = build_query("www.example.com", 1)
-
+    query = build_query(domain_name, TYPE_A)
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.sendto(query, ("8.8.8.8", 53))
 
-    response, _ = sock.recvfrom(1024)
-    print(parse_dns_packet(response))
+    # get the response
+    data, _ = sock.recvfrom(1024)
+    response = parse_dns_packet(data)
+    return ip_to_string(response.answers[0].data)
 
 
 if __name__ == "__main__":
-    main()
+    import sys
+
+    print(lookup_domain(domain_name=sys.argv[1]))
