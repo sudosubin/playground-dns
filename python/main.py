@@ -1,6 +1,7 @@
 import dataclasses
 import io
 import random
+import socket
 import struct
 import typing
 
@@ -100,6 +101,15 @@ def parse_dns_packet(data: bytes):
     return DNSPacket(header, questions, answers, authorities, additionals)
 
 
+def send_query(ip_address: str, domain_name: str, record_type: int):
+    query = build_query(domain_name, record_type)
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    sock.sendto(query, (ip_address, 53))
+
+    data, _ = sock.recvfrom(1024)
+    return parse_dns_packet(data)
+
+
 def decode_name(reader: io.IOBase):
     parts = []
     while (length := reader.read(1)[0]) != 0:
@@ -126,15 +136,7 @@ def ip_to_string(ip: bytes):
 
 
 def lookup_domain(domain_name: str):
-    import socket
-
-    query = build_query(domain_name, TYPE_A)
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    sock.sendto(query, ("8.8.8.8", 53))
-
-    # get the response
-    data, _ = sock.recvfrom(1024)
-    response = parse_dns_packet(data)
+    response = send_query("8.8.8.8", domain_name, TYPE_A)
     return ip_to_string(response.answers[0].data)
 
 
