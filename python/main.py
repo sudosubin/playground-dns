@@ -144,7 +144,7 @@ def ip_to_string(ip: bytes):
 
 
 def lookup_domain(domain_name: str):
-    response = send_query("198.41.0.4", domain_name, TYPE_A)
+    response = send_query("216.239.32.10", domain_name, TYPE_A)
     return ip_to_string(response.answers[0].data)
 
 
