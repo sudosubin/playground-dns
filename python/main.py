@@ -25,6 +25,15 @@ class DNSQuestion:
     class_: int
 
 
+@dataclasses.dataclass
+class DNSRecord:
+    name: bytes
+    type_: int
+    class_: int
+    ttl: int
+    data: bytes
+
+
 def header_to_bytes(header: DNSHeader):
     fields = dataclasses.astuple(header)
     # 6 fields
